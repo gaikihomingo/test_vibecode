@@ -38,12 +38,52 @@ def handler(event, context):
             'body': ''
         }
     
+    # Ensure we always return JSON
+    error_response = {
+        'statusCode': 500,
+        'headers': {
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/json'
+        },
+        'body': json.dumps({
+            'success': False,
+            'error': 'Unknown error'
+        })
+    }
+    
     try:
         # Parse request body
-        if isinstance(event.get('body'), str):
-            data = json.loads(event['body'])
+        body = event.get('body')
+        if not body:
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json'
+                },
+                'body': json.dumps({
+                    'success': False,
+                    'error': 'No request body provided'
+                })
+            }
+        
+        if isinstance(body, str):
+            try:
+                data = json.loads(body)
+            except json.JSONDecodeError as e:
+                return {
+                    'statusCode': 400,
+                    'headers': {
+                        'Access-Control-Allow-Origin': '*',
+                        'Content-Type': 'application/json'
+                    },
+                    'body': json.dumps({
+                        'success': False,
+                        'error': f'Invalid JSON in request body: {str(e)}'
+                    })
+                }
         else:
-            data = event.get('body', {})
+            data = body
         
         origin = data.get('origin', config.DEFAULT_DEPARTURE_CITY)
         destination = data.get('destination', config.DEFAULT_DESTINATION_CITY)
@@ -113,8 +153,15 @@ def handler(event, context):
     except Exception as e:
         import traceback
         error_msg = str(e)
-        traceback.print_exc()
+        error_type = type(e).__name__
+        traceback_str = traceback.format_exc()
         
+        # Log error details (will appear in Netlify function logs)
+        print(f"Error type: {error_type}")
+        print(f"Error message: {error_msg}")
+        print(f"Traceback:\n{traceback_str}")
+        
+        # Return user-friendly error
         return {
             'statusCode': 500,
             'headers': {
@@ -123,6 +170,7 @@ def handler(event, context):
             },
             'body': json.dumps({
                 'success': False,
-                'error': error_msg
-            })
+                'error': f'{error_type}: {error_msg}',
+                'details': traceback_str if 'localhost' in str(event.get('headers', {}).get('host', '')) else None
+            }, default=str)
         }

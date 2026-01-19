@@ -465,7 +465,8 @@
             } catch (error) {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('submitBtn').disabled = false;
-                showError('Network error: ' + error.message);
+                showError('Error: ' + error.message);
+                console.error('Full error:', error);
             }
         });
 
