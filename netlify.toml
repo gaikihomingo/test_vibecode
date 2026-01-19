@@ -1,0 +1,33 @@
+[build]
+  # Directory to publish (relative to root)
+  publish = "public"
+  # Directory with serverless functions
+  functions = "netlify/functions"
+  # Build command (optional, Netlify can auto-detect)
+  command = ""
+
+[build.environment]
+  # Python version for Netlify Functions
+  PYTHON_VERSION = "3.9"
+
+# Redirect rules - serve index.html for all routes (SPA)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers for CORS and security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "Content-Type"
+    Access-Control-Allow-Methods = "POST, OPTIONS"

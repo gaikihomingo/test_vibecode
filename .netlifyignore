@@ -1,0 +1,14 @@
+# Files to exclude from Netlify deployment
+templates/
+app.py
+main.py
+example_usage.py
+*.pyc
+__pycache__/
+venv/
+env/
+.venv/
+.git/
+.gitignore
+README.md
+DEPLOY.md

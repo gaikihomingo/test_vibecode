@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Itinerary Optimizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .slider-group {
+            margin-bottom: 20px;
+        }
+
+        .slider-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .slider {
+            flex: 1;
+            height: 8px;
+            border-radius: 5px;
+            background: #e0e0e0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-value {
+            min-width: 50px;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+        }
+
+        .itinerary {
+            display: none;
+        }
+
+        .itinerary.show {
+            display: block;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .summary-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .summary-item h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .summary-item p {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .flight-info,
+        .hotel-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .info-value {
+            color: #333;
+        }
+
+        .day-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .day-date {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .day-stats {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .activity {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .activity-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .activity-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .badge-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .badge-success {
+            background: #28a745;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✈️ Travel Itinerary Optimizer</h1>
+            <p>Create the perfect trip optimized for cost and time</p>
+        </div>
+
+        <div class="card">
+            <form id="itineraryForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="origin">Departure City</label>
+                        <input type="text" id="origin" name="origin" value="New York" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="destination">Destination City</label>
+                        <input type="text" id="destination" name="destination" value="Paris" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="departure_date">Departure Date</label>
+                        <input type="date" id="departure_date" name="departure_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="return_date">Return Date</label>
+                        <input type="date" id="return_date" name="return_date" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="travelers">Number of Travelers</label>
+                    <select id="travelers" name="travelers">
+                        <option value="2" selected>2 (Couple)</option>
+                        <option value="1">1</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                </div>
+
+                <div class="slider-group">
+                    <label>Cost vs Time Optimization</label>
+                    <div class="slider-container">
+                        <span style="flex: 0 0 80px;">Cost Focus</span>
+                        <input type="range" id="cost_weight" min="0" max="100" value="60" class="slider">
+                        <span class="slider-value" id="cost_value">60%</span>
+                        <span style="flex: 0 0 80px;">Time Focus</span>
+                        <span class="slider-value" id="time_value">40%</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" id="submitBtn">Create Optimal Itinerary</button>
+            </form>
+        </div>
+
+        <div id="loading" class="card loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Scraping travel websites and optimizing your itinerary...</p>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">This may take a few moments</p>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div id="itinerary" class="itinerary"></div>
+    </div>
+
+    <script>
+        // Set default dates
+        const today = new Date();
+        const departureDate = new Date(today);
+        departureDate.setDate(departureDate.getDate() + 30);
+        const returnDate = new Date(departureDate);
+        returnDate.setDate(returnDate.getDate() + 7);
+
+        document.getElementById('departure_date').value = departureDate.toISOString().split('T')[0];
+        document.getElementById('return_date').value = returnDate.toISOString().split('T')[0];
+
+        // Update slider values
+        const costSlider = document.getElementById('cost_weight');
+        const costValue = document.getElementById('cost_value');
+        const timeValue = document.getElementById('time_value');
+
+        costSlider.addEventListener('input', function() {
+            const cost = parseInt(this.value);
+            const time = 100 - cost;
+            costValue.textContent = cost + '%';
+            timeValue.textContent = time + '%';
+        });
+
+        // Handle form submission
+        document.getElementById('itineraryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = {
+                origin: document.getElementById('origin').value,
+                destination: document.getElementById('destination').value,
+                departure_date: document.getElementById('departure_date').value,
+                return_date: document.getElementById('return_date').value,
+                travelers: parseInt(document.getElementById('travelers').value),
+                cost_weight: parseInt(costSlider.value) / 100,
+                time_weight: (100 - parseInt(costSlider.value)) / 100
+            };
+
+            // Show loading, hide error and itinerary
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('itinerary').classList.remove('show');
+            document.getElementById('submitBtn').disabled = true;
+
+            try {
+                // Use Netlify function endpoint
+                const apiUrl = window.location.hostname === 'localhost' 
+                    ? '/api/optimize' 
+                    : '/.netlify/functions/optimize';
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('submitBtn').disabled = false;
+
+                if (data.success) {
+                    displayItinerary(data.itinerary);
+                } else {
+                    showError(data.error || 'An error occurred');
+                }
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('submitBtn').disabled = false;
+                showError('Network error: ' + error.message);
+            }
+        });
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = 'Error: ' + message;
+            errorDiv.style.display = 'block';
+        }
+
+        function formatCurrency(amount) {
+            return '$' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        function displayItinerary(itinerary) {
+            const itineraryDiv = document.getElementById('itinerary');
+            const summary = itinerary.summary;
+            const flight = itinerary.flight;
+            const hotel = itinerary.hotel;
+            const days = itinerary.days;
+
+            let html = '<div class="card itinerary show">';
+            html += '<h1 style="color: #667eea; margin-bottom: 20px;">Your Optimized Itinerary</h1>';
+
+            // Summary
+            html += '<div class="summary">';
+            html += `<div class="summary-item">
+                <h3>Total Cost</h3>
+                <p>${formatCurrency(summary.total_cost)}</p>
+            </div>`;
+            html += `<div class="summary-item">
+                <h3>Trip Duration</h3>
+                <p>${summary.duration_days} Days</p>
+            </div>`;
+            html += `<div class="summary-item">
+                <h3>Total Time</h3>
+                <p>${summary.total_time_hours.toFixed(1)} Hours</p>
+            </div>`;
+            html += '</div>';
+
+            // Flight
+            if (flight) {
+                html += '<div class="section">';
+                html += '<h2>✈️ Flight Details</h2>';
+                html += '<div class="flight-info">';
+                html += `<div class="info-row"><span class="info-label">Airline:</span><span class="info-value">${flight.airline}</span></div>`;
+                html += `<div class="info-row"><span class="info-label">Route:</span><span class="info-value">${flight.origin} → ${flight.destination}</span></div>`;
+                html += `<div class="info-row"><span class="info-label">Departure:</span><span class="info-value">${flight.departure_time}</span></div>`;
+                html += `<div class="info-row"><span class="info-label">Arrival:</span><span class="info-value">${flight.arrival_time}</span></div>`;
+                html += `<div class="info-row"><span class="info-label">Duration:</span><span class="info-value">${flight.duration_hours.toFixed(1)} hours</span></div>`;
+                html += `<div class="info-row"><span class="info-label">Stops:</span><span class="info-value">${flight.stops}</span></div>`;
+                html += `<div class="info-row"><span class="info-label">Price:</span><span class="info-value">${formatCurrency(flight.total_price)}</span></div>`;
+                html += '</div></div>';
+            }
+
+            // Hotel
+            if (hotel) {
+                html += '<div class="section">';
+                html += '<h2>🏨 Hotel Details</h2>';
+                html += '<div class="hotel-info">';
+                html += `<div class="info-row"><span class="info-label">Name:</span><span class="info-value">${hotel.name}</span></div>`;
+                html += `<div class="info-row"><span class="info-label">Location:</span><span class="info-value">${hotel.location}</span></div>`;
+                html += `<div class="info-row"><span class="info-label">Check-in:</span><span class="info-value">${hotel.check_in}</span></div>`;
+                html += `<div class="info-row"><span class="info-label">Check-out:</span><span class="info-value">${hotel.check_out}</span></div>`;
+                html += `<div class="info-row"><span class="info-label">Nights:</span><span class="info-value">${hotel.nights}</span></div>`;
+                html += `<div class="info-row"><span class="info-label">Rating:</span><span class="info-value">${hotel.rating.toFixed(1)}/5.0</span></div>`;
+                html += `<div class="info-row"><span class="info-label">Price:</span><span class="info-value">${formatCurrency(hotel.total_price)}</span></div>`;
+                html += `<div class="info-row"><span class="info-label">Amenities:</span><span class="info-value">${hotel.amenities.join(', ')}</span></div>`;
+                html += '</div></div>';
+            }
+
+            // Daily Activities
+            if (days && days.length > 0) {
+                html += '<div class="section">';
+                html += '<h2>📅 Daily Itinerary</h2>';
+                days.forEach(day => {
+                    html += '<div class="day-card">';
+                    html += '<div class="day-header">';
+                    html += `<div class="day-date">${day.date}</div>`;
+                    html += `<div class="day-stats">${day.activities.length} activities • ${formatCurrency(day.total_cost)} • ${day.total_time_hours.toFixed(1)}h</div>`;
+                    html += '</div>';
+                    
+                    day.activities.forEach(activity => {
+                        html += '<div class="activity">';
+                        html += `<div class="activity-name">${activity.name} <span class="badge badge-primary">${activity.category}</span></div>`;
+                        html += '<div class="activity-details">';
+                        html += `<div>⏱️ ${activity.duration_hours.toFixed(1)} hours</div>`;
+                        html += `<div>💰 ${formatCurrency(activity.total_price)}</div>`;
+                        html += `<div>⭐ ${activity.rating.toFixed(1)}/5.0</div>`;
+                        html += '</div>';
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                });
+                html += '</div>';
+            }
+
+            html += '</div>';
+            itineraryDiv.innerHTML = html;
+            itineraryDiv.classList.add('show');
+        }
+    </script>
+</body>
+</html>
