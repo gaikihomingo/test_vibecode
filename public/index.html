@@ -440,9 +440,14 @@
 
             try {
                 // Use Netlify function endpoint
-                const apiUrl = window.location.hostname === 'localhost' 
-                    ? '/api/optimize' 
-                    : '/.netlify/functions/optimize';
+                // Try both possible paths for Netlify functions
+                let apiUrl;
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    apiUrl = '/api/optimize';
+                } else {
+                    // Try the function endpoint (works for both directory and file structure)
+                    apiUrl = '/.netlify/functions/optimize';
+                }
                 
                 const response = await fetch(apiUrl, {
                     method: 'POST',

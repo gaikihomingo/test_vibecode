@@ -11,6 +11,14 @@
   PYTHON_VERSION = "3.9"
 
 # Redirect rules - serve index.html for all routes (SPA)
+# BUT exclude function endpoints - they must come FIRST
+[[redirects]]
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+  force = true
+
+# Then redirect everything else to index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
